@@ -1,0 +1,1853 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎯 Betűrendi kalandok - SNI Gyakorló</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-light: #818cf8;
+      --primary-bg: #eef2ff;
+      --accent: #f59e0b;
+      --accent-light: #fef3c7;
+      --success: #10b981;
+      --success-bg: #d1fae5;
+      --warning: #f97316;
+      --warning-bg: #ffedd5;
+      --danger: #ef4444;
+      --danger-bg: #fee2e2;
+      --bg-gradient: linear-gradient(135deg, #a7f3d0 0%, #bae6fd 50%, #c7d2fe 100%);
+      --card-bg: #ffffff;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --border-radius: 20px;
+      --font-scale: 1;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Lexend', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-gradient);
+      min-height: 100vh;
+      color: var(--text-main);
+      padding: 16px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      font-size: calc(16px * var(--font-scale));
+    }
+
+    .app-card {
+      width: 100%;
+      max-width: 940px;
+      background: var(--card-bg);
+      border-radius: var(--border-radius);
+      box-shadow: 0 16px 40px rgba(30, 41, 59, 0.15);
+      overflow: hidden;
+      margin: 10px auto;
+      border: 3px solid rgba(255, 255, 255, 0.8);
+      position: relative;
+    }
+
+    /* Felső sáv vezérlőkkel */
+    .top-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 20px;
+      background: #f8fafc;
+      border-bottom: 2px solid #e2e8f0;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .tool-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .icon-btn {
+      background: white;
+      border: 2px solid #cbd5e1;
+      border-radius: 12px;
+      padding: 6px 12px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-main);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+
+    .icon-btn:hover {
+      background: #f1f5f9;
+      border-color: var(--primary-light);
+      transform: translateY(-1px);
+    }
+
+    .icon-btn.active {
+      background: var(--primary-bg);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    /* Fejléc */
+    .app-header {
+      text-align: center;
+      padding: 20px 20px 10px;
+    }
+
+    .app-header h1 {
+      font-size: calc(28px * var(--font-scale));
+      font-weight: 800;
+      color: #3730a3;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .app-header p {
+      font-size: calc(16px * var(--font-scale));
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* Szintválasztó fülek - 5 SZINT */
+    .level-tabs {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      padding: 12px 18px;
+    }
+
+    @media (max-width: 900px) {
+      .level-tabs {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 600px) {
+      .level-tabs {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 420px) {
+      .level-tabs {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .level-tab {
+      background: #f1f5f9;
+      border: 3px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 10px 12px;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      position: relative;
+      user-select: none;
+    }
+
+    .level-tab:hover:not(.locked) {
+      border-color: var(--primary-light);
+      background: #f8fafc;
+      transform: translateY(-2px);
+    }
+
+    .level-tab.active {
+      background: var(--primary-bg);
+      border-color: var(--primary);
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.18);
+    }
+
+    .level-tab.locked {
+      opacity: 0.65;
+      background: #f1f5f9;
+      cursor: not-allowed;
+    }
+
+    .level-tab-num {
+      font-size: calc(11px * var(--font-scale));
+      font-weight: 700;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 3px;
+    }
+
+    .level-tab.locked .level-tab-num {
+      color: #94a3b8;
+    }
+
+    .level-tab-title {
+      font-size: calc(13px * var(--font-scale));
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 4px;
+      line-height: 1.25;
+    }
+
+    .level-tab-progress {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2px;
+      font-size: 11px;
+    }
+
+    .star-icon {
+      color: #cbd5e1;
+      transition: transform 0.2s;
+    }
+
+    .star-icon.filled {
+      color: #f59e0b;
+      filter: drop-shadow(0 1px 2px rgba(245, 158, 11, 0.4));
+    }
+
+    /* ABC Segédlet / Sorvezető szalag */
+    .abc-ribbon-container {
+      margin: 10px 18px;
+      background: #fffbeb;
+      border: 2px dashed #fde68a;
+      border-radius: 14px;
+      padding: 10px 14px;
+      transition: all 0.3s ease;
+    }
+
+    .abc-ribbon-container.hidden {
+      display: none;
+    }
+
+    .abc-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: calc(13px * var(--font-scale));
+      font-weight: 700;
+      color: #b45309;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .abc-letters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      justify-content: center;
+      line-height: 1.25;
+    }
+
+    .abc-char {
+      display: inline-block;
+      padding: 3px 6px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: calc(13px * var(--font-scale));
+      color: #78350f;
+      background: rgba(254, 243, 199, 0.7);
+      transition: all 0.2s ease;
+    }
+
+    .abc-char.highlight {
+      background: #f59e0b;
+      color: #ffffff;
+      font-weight: 800;
+      transform: scale(1.22);
+      box-shadow: 0 2px 6px rgba(245, 158, 11, 0.5);
+      border: 1px solid #d97706;
+      z-index: 2;
+    }
+
+    /* Feladat Kártya */
+    .task-card {
+      margin: 15px 18px;
+      background: #f8fafc;
+      border: 2px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 18px 22px;
+      position: relative;
+    }
+
+    .task-instruction-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+
+    .task-instruction {
+      font-size: calc(18px * var(--font-scale));
+      font-weight: 700;
+      color: #1e1b4b;
+    }
+
+    .task-subhint {
+      font-size: calc(15px * var(--font-scale));
+      color: #475569;
+      margin-top: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .level-goal-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: white;
+      border: 2px solid #e2e8f0;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: calc(14px * var(--font-scale));
+      font-weight: 700;
+      color: #4338ca;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.04);
+      white-space: nowrap;
+    }
+
+    /* Interaktív Játék Tér */
+    .game-arena {
+      padding: 10px 18px 25px;
+    }
+
+    .cards-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 14px;
+      margin: 25px 0 20px;
+      flex-wrap: wrap;
+      min-height: 140px;
+    }
+
+    .word-tile {
+      background: #ffffff;
+      border: 3px solid #6366f1;
+      border-radius: 18px;
+      padding: 12px 16px;
+      min-width: 110px;
+      text-align: center;
+      box-shadow: 0 8px 18px rgba(99, 102, 241, 0.15);
+      cursor: grab;
+      user-select: none;
+      transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .word-tile:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px rgba(99, 102, 241, 0.25);
+      border-color: #4f46e5;
+    }
+
+    .word-tile:active {
+      cursor: grabbing;
+    }
+
+    .word-tile.selected {
+      border-color: #f59e0b;
+      background: #fffbeb;
+      transform: scale(1.06);
+      box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.35);
+    }
+
+    .word-tile.dragging {
+      opacity: 0.45;
+      transform: scale(0.95);
+    }
+
+    .word-tile.drag-over {
+      border-style: dashed;
+      border-color: #f59e0b;
+      transform: scale(1.05);
+    }
+
+    .word-tile.correct {
+      background: #ecfdf5 !important;
+      border-color: #10b981 !important;
+      color: #065f46 !important;
+      box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25);
+      animation: pulseSuccess 0.5s ease;
+    }
+
+    .word-tile.incorrect {
+      background: #fef2f2 !important;
+      border-color: #ef4444 !important;
+      box-shadow: 0 8px 20px rgba(239, 68, 68, 0.2);
+      animation: shakeTile 0.45s ease;
+    }
+
+    @keyframes pulseSuccess {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes shakeTile {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-8px); }
+      40%, 80% { transform: translateX(8px); }
+    }
+
+    /* A kártya tartalma */
+    .tile-text-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: calc(26px * var(--font-scale));
+      font-weight: 700;
+      color: #1e293b;
+    }
+
+    /* Kiemelt betű stílusok SNI figyelemfókuszáláshoz */
+    .first-letter-highlight {
+      color: #4f46e5;
+      font-weight: 800;
+      background: #e0e7ff;
+      border-radius: 8px;
+      padding: 0 4px;
+    }
+
+    .second-letter-highlight {
+      color: #b45309;
+      font-weight: 800;
+      background: #fef3c7;
+      border-radius: 8px;
+      padding: 0 4px;
+      text-decoration: underline;
+      text-decoration-thickness: 3px;
+    }
+
+    .third-letter-highlight {
+      color: #7c2d12;
+      font-weight: 800;
+      background: #fde047;
+      border-radius: 8px;
+      padding: 0 4px;
+      text-decoration: underline;
+      text-decoration-thickness: 3px;
+    }
+
+    .speak-btn {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      cursor: pointer;
+      color: #475569;
+      transition: all 0.2s;
+    }
+
+    .speak-btn:hover {
+      background: #e0e7ff;
+      color: #4338ca;
+      transform: scale(1.1);
+    }
+
+    /* SNI Könnyítő Vezérlők a kártyán (Nyilak mozgatáshoz) */
+    .tile-controls {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+      justify-content: center;
+      margin-top: 4px;
+      border-top: 1px solid #f1f5f9;
+      padding-top: 6px;
+    }
+
+    .shift-btn {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      width: 32px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 800;
+      color: #475569;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .shift-btn:hover:not(:disabled) {
+      background: #e2e8f0;
+      color: #1e293b;
+      transform: scale(1.08);
+    }
+
+    .shift-btn:disabled {
+      opacity: 0.25;
+      cursor: not-allowed;
+    }
+
+    .swap-hint-text {
+      text-align: center;
+      font-size: calc(13px * var(--font-scale));
+      color: #64748b;
+      margin-bottom: 15px;
+    }
+
+    /* Visszajelzés szalag */
+    .feedback-box {
+      margin: 15px 0;
+      padding: 16px 20px;
+      border-radius: 14px;
+      text-align: center;
+      font-size: calc(17px * var(--font-scale));
+      font-weight: 700;
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .feedback-box.show {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .feedback-box.success {
+      background: var(--success-bg);
+      border: 2px solid var(--success);
+      color: #065f46;
+    }
+
+    .feedback-box.error {
+      background: var(--warning-bg);
+      border: 2px solid var(--warning);
+      color: #9a3412;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Gombok sora */
+    .actions-bar {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-top: 15px;
+    }
+
+    .main-btn {
+      padding: 14px 28px;
+      font-size: calc(17px * var(--font-scale));
+      font-weight: 700;
+      font-family: inherit;
+      border-radius: 16px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .main-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.15);
+    }
+
+    .main-btn:active {
+      transform: translateY(1px);
+    }
+
+    .btn-check {
+      background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+      color: white;
+    }
+
+    .btn-next {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      display: none;
+    }
+
+    .btn-retry {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      color: white;
+      display: none;
+    }
+
+    .btn-help {
+      background: #f1f5f9;
+      color: #475569;
+      border: 2px solid #cbd5e1;
+    }
+
+    .btn-help:hover {
+      background: #e2e8f0;
+      color: #1e293b;
+    }
+
+    /* SNI Szintlépés Modal / Kártya */
+    .level-up-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .level-up-modal.show {
+      display: flex;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .level-up-card {
+      background: white;
+      border-radius: 24px;
+      padding: 36px 30px;
+      max-width: 530px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      border: 4px solid #fde047;
+      animation: zoomIn 0.35s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    }
+
+    @keyframes zoomIn {
+      from { transform: scale(0.85); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .celebrate-icon {
+      font-size: 64px;
+      margin-bottom: 12px;
+      display: inline-block;
+      animation: bounceCelebration 1.2s infinite ease-in-out;
+    }
+
+    @keyframes bounceCelebration {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-16px) scale(1.1); }
+    }
+
+    .level-up-title {
+      font-size: calc(26px * var(--font-scale));
+      font-weight: 800;
+      color: #1e1b4b;
+      margin-bottom: 10px;
+    }
+
+    .level-up-desc {
+      font-size: calc(17px * var(--font-scale));
+      color: #475569;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    .level-up-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .btn-advance {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      font-size: calc(18px * var(--font-scale));
+      padding: 16px 28px;
+    }
+
+    .btn-stay {
+      background: #f1f5f9;
+      color: #475569;
+      border: 2px solid #cbd5e1;
+      font-size: calc(16px * var(--font-scale));
+      padding: 12px 24px;
+    }
+
+    /* Teljes Befejező Képernyő (Mind az 5 szint után) */
+    .grand-finish-screen {
+      display: none;
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    .grand-finish-screen.show {
+      display: block;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .diploma-card {
+      background: #fffdf5;
+      border: 4px solid #f59e0b;
+      border-radius: 24px;
+      padding: 34px 26px;
+      margin: 20px auto;
+      max-width: 600px;
+      box-shadow: 0 10px 25px rgba(245, 158, 11, 0.2);
+    }
+
+    /* Lábléc infó */
+    .app-footer {
+      text-align: center;
+      padding: 15px 20px;
+      background: #f8fafc;
+      border-top: 2px solid #e2e8f0;
+      font-size: calc(13px * var(--font-scale));
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-card">
+    
+    <!-- Felső segédeszköz sáv -->
+    <div class="top-toolbar">
+      <div class="tool-group">
+        <button class="icon-btn" id="toggle-abc-btn" title="ABC sorvezető ki/be">
+          <span>👁️</span> <span id="abc-btn-text">ABC segítség elrejtése</span>
+        </button>
+        <button class="icon-btn" id="toggle-sound-btn" title="Hangok ki/be">
+          <span id="sound-icon">🔊</span> <span id="sound-text">Hang be</span>
+        </button>
+      </div>
+
+      <div class="tool-group">
+        <span style="font-size: 13px; font-weight: 600; color: #64748b;">Betűméret:</span>
+        <button class="icon-btn" id="font-decrease-btn" title="Kisebb betűk">A-</button>
+        <button class="icon-btn" id="font-increase-btn" title="Nagyobb betűk">A+</button>
+        <button class="icon-btn" id="unlock-all-btn" title="Tanári gomb: Mind az 5 szint feloldása">
+          <span>🔓</span> <span>Minden szint</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Fejléc -->
+    <header class="app-header">
+      <h1>🎯 Betűrendi kalandok</h1>
+      <p>Gyakorold a betűrendbe sorolást lépésről lépésre, könnyedén!</p>
+    </header>
+
+    <!-- 5 Szint Fül -->
+    <nav class="level-tabs" aria-label="Szintek választása">
+      <div class="level-tab active" id="tab-level-1" onclick="switchLevel(1)">
+        <div class="level-tab-num">
+          <span>1. SZINT</span>
+          <span id="tab-badge-1">Gyakorlás</span>
+        </div>
+        <div class="level-tab-title">🔤 Betűk (2-3 betű)</div>
+        <div class="level-tab-progress" id="tab-stars-1"></div>
+      </div>
+
+      <div class="level-tab locked" id="tab-level-2" onclick="switchLevel(2)">
+        <div class="level-tab-num">
+          <span>2. SZINT</span>
+          <span id="tab-badge-2">🔒 Zárva</span>
+        </div>
+        <div class="level-tab-title">🐱 Szavak (Különböző)</div>
+        <div class="level-tab-progress" id="tab-stars-2"></div>
+      </div>
+
+      <div class="level-tab locked" id="tab-level-3" onclick="switchLevel(3)">
+        <div class="level-tab-num">
+          <span>3. SZINT</span>
+          <span id="tab-badge-3">🔒 Zárva</span>
+        </div>
+        <div class="level-tab-title">🍎 Szavak (Azonos 1.)</div>
+        <div class="level-tab-progress" id="tab-stars-3"></div>
+      </div>
+
+      <div class="level-tab locked" id="tab-level-4" onclick="switchLevel(4)">
+        <div class="level-tab-num">
+          <span>4. SZINT</span>
+          <span id="tab-badge-4">🔒 Zárva</span>
+        </div>
+        <div class="level-tab-title">🌟 Bajnok (4 szó)</div>
+        <div class="level-tab-progress" id="tab-stars-4"></div>
+      </div>
+
+      <div class="level-tab locked" id="tab-level-5" onclick="switchLevel(5)">
+        <div class="level-tab-num">
+          <span>5. SZINT</span>
+          <span id="tab-badge-5">🔒 Zárva</span>
+        </div>
+        <div class="level-tab-title">👑 Mester (10 feladat)</div>
+        <div class="level-tab-progress" id="tab-stars-5"></div>
+      </div>
+    </nav>
+
+    <!-- ABC Sorvezető szalag (SNI vizuális mankó Dz és Dzs betűkkel) -->
+    <div class="abc-ribbon-container" id="abc-ribbon">
+      <div class="abc-header">
+        <span>📖 Magyar ábécé sorvezető (figyeld a kiemelt betűket):</span>
+        <span style="font-size: 12px; color: #92400e;">💡 Rövid és hosszú magánhangzók egyformák: a=á, e=é, o=ó, ö=ő, u=ú, ü=ű</span>
+      </div>
+      <div class="abc-letters" id="abc-letters-list">
+        <!-- JS generálja ki az ABC betűit -->
+      </div>
+    </div>
+
+    <!-- Fő Játékterület -->
+    <main id="game-main-area">
+      <!-- Feladat kártya -->
+      <div class="task-card">
+        <div class="task-instruction-row">
+          <div class="task-instruction" id="task-title">1. Feladat: Rakd ABC sorrendbe a betűket!</div>
+          <div class="level-goal-badge" id="level-goal-badge">
+            <span>⭐</span> <span id="level-score-display">0 / 5 helyes válasz</span>
+          </div>
+        </div>
+        <div class="task-subhint" id="task-subhint">
+          <span>💡</span> <span id="task-subhint-text">Húzd vagy a nyilakkal mozgasd a kártyákat a helyes sorrendbe!</span>
+        </div>
+      </div>
+
+      <!-- Kártyák területe -->
+      <section class="game-arena">
+        <div class="swap-hint-text">
+          🖐️ <strong>Tipp:</strong> Mozgathatod <strong>húzással</strong>, a kártyák alatti <strong>nyilakkal (◀ ▶)</strong>, vagy <strong>kattints két kártyára</strong> a cseréhez!
+        </div>
+
+        <div class="cards-row" id="cards-container">
+          <!-- Dinamikus kártyák -->
+        </div>
+
+        <!-- Visszajelző sáv -->
+        <div class="feedback-box" id="feedback-box"></div>
+
+        <!-- Műveleti gombok -->
+        <div class="actions-bar">
+          <button class="main-btn btn-check" id="check-btn" onclick="checkCurrentAnswer()">
+            <span>✓</span> <span>Ellenőrzés</span>
+          </button>
+
+          <button class="main-btn btn-retry" id="retry-btn" onclick="retryCurrentTask()">
+            <span>🔄</span> <span>Újrapróbálom</span>
+          </button>
+
+          <button class="main-btn btn-next" id="next-btn" onclick="goToNextTask()">
+            <span>➔</span> <span>Következő feladat</span>
+          </button>
+
+          <button class="main-btn btn-help" id="hint-btn" onclick="showHelpHint()">
+            <span>💡</span> <span>Segítség / Tipp</span>
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <!-- Nagy befejező képernyő (Mind az 5 szint után) -->
+    <section class="grand-finish-screen" id="grand-finish-screen">
+      <div class="diploma-card">
+        <div style="font-size: 80px; margin-bottom: 10px;">🏆</div>
+        <h2 style="font-size: 32px; color: #b45309; margin-bottom: 12px;">Bravó! Arany fokozatú Betűrend Nagymester lettél!</h2>
+        <p style="font-size: 18px; color: #475569; line-height: 1.6; margin-bottom: 24px;">
+          Lenyűgöző teljesítmény! Mind az 5 szintet sikeresen teljesítetted!<br>
+          A legnehezebb, azonos kezdőbetűs 10 feladványt és a 4 szavas feladatokat is hibátlanul megoldottad! Nagyon büszke lehetsz magadra! 🌟
+        </p>
+        <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
+          <button class="main-btn btn-check" onclick="restartEntireGame()">
+            <span>🔄</span> <span>Újrakezdem az elejétől</span>
+          </button>
+          <button class="main-btn btn-help" onclick="switchLevel(1)">
+            <span>🔤</span> <span>Vissza a szintekhez</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- SNI Szintlépés Modal (Megjelenik, amint eléri az előírt jó válaszok számát) -->
+    <div class="level-up-modal" id="level-up-modal">
+      <div class="level-up-card">
+        <div class="celebrate-icon">🌟🎉🌟</div>
+        <div class="level-up-title" id="level-up-title">Nagyszerű! Megvan a szint teljesítése!</div>
+        <div class="level-up-desc" id="level-up-desc">
+          Sikeresen teljesítetted ezt a szintet! Nagyon ügyes vagy!<br>
+          Tovább szeretnél lépni a következő szintre, vagy gyakorolsz még itt?
+        </div>
+        <div class="level-up-buttons">
+          <button class="main-btn btn-advance" id="modal-next-level-btn" onclick="advanceToNextLevelFromModal()">
+            <span>🚀</span> <span id="modal-next-level-text">Tovább a következő szintre!</span>
+          </button>
+          <button class="main-btn btn-stay" onclick="stayOnCurrentLevelFromModal()">
+            <span>🔁</span> <span>Gyakorlok még ezen a szinten</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lábléc -->
+    <footer class="app-footer">
+      <span>Magyar nyelv 5. osztály • Betűrendbe sorolás játékos gyakorló SNI tanulók számára</span>
+    </footer>
+
+  </div>
+
+  <script>
+    /* =========================================================
+       MAGYAR ÁBÉCÉ ADATOK (DZ ÉS DZS BETŰKKEL KIEGÉSZÍTVE)
+       ========================================================= */
+    const HU_ALPHABET = [
+      { display: 'A, Á', keys: ['a', 'á'] },
+      { display: 'B', keys: ['b'] },
+      { display: 'C', keys: ['c'] },
+      { display: 'Cs', keys: ['cs'] },
+      { display: 'D', keys: ['d'] },
+      { display: 'Dz', keys: ['dz'] },
+      { display: 'Dzs', keys: ['dzs'] },
+      { display: 'E, É', keys: ['e', 'é'] },
+      { display: 'F', keys: ['f'] },
+      { display: 'G', keys: ['g'] },
+      { display: 'Gy', keys: ['gy'] },
+      { display: 'H', keys: ['h'] },
+      { display: 'I, Í', keys: ['i', 'í'] },
+      { display: 'J', keys: ['j'] },
+      { display: 'K', keys: ['k'] },
+      { display: 'L', keys: ['l'] },
+      { display: 'Ly', keys: ['ly'] },
+      { display: 'M', keys: ['m'] },
+      { display: 'N', keys: ['n'] },
+      { display: 'Ny', keys: ['ny'] },
+      { display: 'O, Ó', keys: ['o', 'ó'] },
+      { display: 'Ö, Ő', keys: ['ö', 'ő'] },
+      { display: 'P', keys: ['p'] },
+      { display: 'R', keys: ['r'] },
+      { display: 'S', keys: ['s'] },
+      { display: 'Sz', keys: ['sz'] },
+      { display: 'T', keys: ['t'] },
+      { display: 'Ty', keys: ['ty'] },
+      { display: 'U, Ú', keys: ['u', 'ú'] },
+      { display: 'Ü, Ű', keys: ['ü', 'ű'] },
+      { display: 'V', keys: ['v'] },
+      { display: 'Z', keys: ['z'] },
+      { display: 'Zs', keys: ['zs'] }
+    ];
+
+    // Többjegyű mássalhangzók listája
+    const HU_MULTI_CONSONANTS = ['dzs', 'cs', 'dz', 'gy', 'ly', 'ny', 'sz', 'ty', 'zs'];
+
+    // Szavak felbontása különálló magyar betűkre (hangokra), felismerve a 2 és 3 jegyűeket is!
+    // pl. 'asztal' -> ['a', 'sz', 't', 'a', 'l']
+    function getHungarianLetterTokens(word) {
+      const w = word.toLowerCase();
+      const tokens = [];
+      let i = 0;
+      while (i < word.length) {
+        if (w.slice(i, i + 3) === 'dzs') {
+          tokens.push(word.slice(i, i + 3));
+          i += 3;
+        } else if (HU_MULTI_CONSONANTS.includes(w.slice(i, i + 2))) {
+          tokens.push(word.slice(i, i + 2));
+          i += 2;
+        } else {
+          tokens.push(word.slice(i, i + 1));
+          i += 1;
+        }
+      }
+      return tokens;
+    }
+
+    // Magyar rendezési szabály: Intl.Collator hu nyelvre
+    const huCollator = new Intl.Collator('hu', { sensitivity: 'base' });
+    const huExactCollator = new Intl.Collator('hu', { sensitivity: 'accent' });
+
+    function compareHungarian(a, b) {
+      const cmp = huCollator.compare(a, b);
+      if (cmp !== 0) return cmp;
+      return huExactCollator.compare(a, b);
+    }
+
+    /* =========================================================
+       FELADATBANKOK SNI TANULÓKNAK (1-5. SZINT)
+       ========================================================= */
+    const TASK_POOLS = {
+      1: {
+        title: "1. Szint: Betűk ABC sorrendje",
+        instruction: "Rakd a betűket a helyes ABC sorrendbe!",
+        subhint: "Használd a sárga ABC szalagot segítségnek!",
+        itemsPool: [
+          ['m', 'b'],
+          ['k', 'a'],
+          ['d', 't'],
+          ['f', 'p'],
+          ['c', 'h'],
+          ['l', 's'],
+          ['g', 'v'],
+          ['r', 'z'],
+          ['b', 'n'],
+          ['e', 'k'],
+          ['j', 'u'],
+          ['a', 'z'],
+          ['b', 'm', 't'],
+          ['a', 'k', 'p'],
+          ['d', 'f', 'z'],
+          ['c', 'l', 'v'],
+          ['g', 'r', 's'],
+          ['e', 'n', 'u'],
+          ['b', 'h', 'k'],
+          ['m', 'p', 't']
+        ]
+      },
+      2: {
+        title: "2. Szint: Szavak különböző kezdőbetűkkel",
+        instruction: "Figyeld a szavak ELSŐ betűjét, és rakd őket ABC sorrendbe!",
+        subhint: "A szavak első betűjét kékkel emeltük ki neked!",
+        itemsPool: [
+          ['kutya', 'alma'],
+          ['hal', 'béka'],
+          ['nap', 'fa'],
+          ['cica', 'ló'],
+          ['madár', 'róka'],
+          ['asztal', 'szék'],
+          ['torta', 'kifli'],
+          ['sün', 'egér'],
+          ['bicikli', 'autó'],
+          ['ceruza', 'toll'],
+          ['alma', 'kutya', 'sün'],
+          ['béka', 'hal', 'nyuszi'],
+          ['fa', 'ház', 'nap'],
+          ['cica', 'ló', 'róka'],
+          ['autó', 'hajó', 'vonat'],
+          ['ceruza', 'pad', 'toll'],
+          ['baba', 'labda', 'maci'],
+          ['eper', 'kifli', 'szőlő']
+        ]
+      },
+      3: {
+        title: "3. Szint: Szavak azonos kezdőbetűkkel",
+        instruction: "Mivel az 1. betű egyforma, a MÁSODIK betű dönt! Állítsd őket ABC sorrendbe!",
+        subhint: "Figyelem: Kétjegyű betűknél (pl. sz, cs, ny) mindkét jegy sárgával van kiemelve!",
+        itemsPool: [
+          ['alma', 'asztal'],     // l vs sz
+          ['bagoly', 'béka'],     // a vs é/e
+          ['ceruza', 'cica'],     // e vs i
+          ['hal', 'hold'],        // a vs o
+          ['kapa', 'kutya'],      // a vs u
+          ['lámpa', 'ló'],        // á/a vs ó/o
+          ['maci', 'mozi'],       // a vs o
+          ['fa', 'fecske'],       // a vs e
+          ['tál', 'toll'],        // á/a vs o
+          ['pad', 'piros'],       // a vs i
+          ['sün', 'seprű'],       // ü vs e -> seprű, sün
+          ['ablak', 'alma', 'asztal'],   // b, l, sz
+          ['bab', 'béka', 'busz'],       // a, é/e, u
+          ['ceruza', 'cica', 'cukor'],   // e, i, u
+          ['hal', 'hinta', 'hóember'],   // a, i, ó/o
+          ['kapa', 'kifli', 'kutya'],    // a, i, u
+          ['madár', 'méz', 'mozi'],      // a, é/e, o
+          ['pad', 'piros', 'pulyka'],    // a, i, u
+          ['sál', 'seprű', 'sün']        // á/a, e, ü
+        ]
+      },
+      4: {
+        title: "4. Szint: 4 szó sorrendbe rendezése (Bajnok szint)",
+        instruction: "Kihívás: Most már 4 szót kell helyesen ABC sorrendbe állítanod!",
+        subhint: "Kövesd az ABC sorvezetőt balról jobbra haladva!",
+        itemsPool: [
+          ['alma', 'hal', 'kutya', 'sün'],
+          ['fa', 'ház', 'nap', 'róka'],
+          ['autó', 'bicikli', 'hajó', 'vonat'],
+          ['ceruza', 'füzet', 'könyv', 'toll'],
+          ['béka', 'cica', 'egér', 'nyuszi'],
+          ['asztal', 'lámpa', 'pad', 'szék'],
+          ['baba', 'labda', 'maci', 'torta'],
+          ['eper', 'kifli', 'méz', 'szőlő'],
+          ['csillag', 'hold', 'nap', 'szivárvány'],
+          ['madár', 'pillangó', 'róka', 'veréb'],
+          ['barát', 'iskola', 'tanár', 'udvar'],
+          ['kapa', 'kifli', 'kutya', 'kürt'],
+          ['pad', 'piros', 'pulyka', 'pöttyös'],
+          ['tál', 'toll', 'túró', 'tűz'],
+          ['fa', 'fecske', 'foci', 'füzet'],
+          ['alma', 'asztal', 'autó', 'ágy']
+        ]
+      },
+      5: {
+        title: "5. Szint: Mester szint - Azonos kezdőbetűk (10 feladat)",
+        instruction: "Mester kihívás: Az első két betű is megegyezik! A HARMADIK betű dönt!",
+        subhint: "A döntő 3. betűt sárgával aláhúzva emeltük ki neked!",
+        itemsPool: [
+          ['kapa', 'karát', 'kavics'],       // ka-p, ka-r, ka-v
+          ['baba', 'bagoly', 'balta'],       // ba-b, ba-g, ba-l
+          ['alma', 'altató', 'alvás'],       // al-m, al-t, al-v
+          ['falu', 'farkas', 'fazék'],       // fa-l, fa-r, fa-z
+          ['hal', 'hangya', 'has'],          // ha-l, ha-ng, ha-s
+          ['madár', 'mag', 'malac'],         // ma-d, ma-g, ma-l
+          ['pad', 'palack', 'papagáj'],      // pa-d, pa-l, pa-p
+          ['lakás', 'lapát', 'lassú'],       // la-k, la-p, la-ss
+          ['kefe', 'kenyér', 'kert'],        // ke-f, ke-ny, ke-r
+          ['csiga', 'csillag', 'csizma'],    // csi-g, csi-l, csi-z
+          ['selyem', 'seprű', 'sertés'],     // se-l, se-p, se-r
+          ['boci', 'bokor', 'bolt'],         // bo-c, bo-k, bo-l
+          ['kifli', 'kígyó', 'király'],      // ki-f, ki-g, ki-r
+          ['nyak', 'nyalóka', 'nyár'],       // nya-k, nya-l, nya-r
+          ['torony', 'torna', 'torta']       // to-r-o, to-r-n, to-r-t
+        ]
+      }
+    };
+
+    /* =========================================================
+       ÁLLAPOTKEZELÉS (GAME STATE - 5 SZINTTEL)
+       ========================================================= */
+    const state = {
+      currentLevel: 1,
+      scores: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+      unlocked: { 1: true, 2: false, 3: false, 4: false, 5: false },
+      taskIndex: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+      currentItems: [],
+      correctOrder: [],
+      selectedTileIndex: null,
+      soundEnabled: true,
+      fontScale: 1,
+      attemptsOnCurrentTask: 0
+    };
+
+    // Szintenkénti cél jó válaszok száma (1-4. szint: 5 jó; 5. szint: 10 jó)
+    function getTargetScore(lvl) {
+      return lvl === 5 ? 10 : 5;
+    }
+
+    /* =========================================================
+       HANG-SZINTETIZÁTOR (Web Audio API)
+       ========================================================= */
+    let audioCtx = null;
+    function getAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function playTone(freq, type = 'sine', duration = 0.15, gainVal = 0.1) {
+      if (!state.soundEnabled) return;
+      try {
+        const ctx = getAudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        gain.gain.setValueAtTime(gainVal, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + duration);
+      } catch (e) {}
+    }
+
+    function playSound(type) {
+      if (!state.soundEnabled) return;
+      try {
+        if (type === 'click') {
+          playTone(480, 'sine', 0.08, 0.08);
+        } else if (type === 'swap') {
+          playTone(380, 'sine', 0.08, 0.06);
+          setTimeout(() => playTone(520, 'sine', 0.08, 0.06), 70);
+        } else if (type === 'correct') {
+          [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+            setTimeout(() => playTone(freq, 'triangle', 0.25, 0.12), i * 90);
+          });
+        } else if (type === 'levelup') {
+          [523.25, 659.25, 783.99, 1046.50, 1318.51].forEach((freq, i) => {
+            setTimeout(() => playTone(freq, 'square', 0.3, 0.08), i * 110);
+          });
+        } else if (type === 'incorrect') {
+          playTone(330, 'sine', 0.2, 0.1);
+          setTimeout(() => playTone(260, 'sine', 0.25, 0.1), 120);
+        }
+      } catch (e) {}
+    }
+
+    // Magyar felolvasás (Text-to-Speech)
+    function speakText(text) {
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'hu-HU';
+      utterance.rate = 0.9;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    /* =========================================================
+       ABC SORVEZETŐ SZALAG LÉTREHOZÁSA ÉS KIEMELÉS
+       ========================================================= */
+    function renderAbcRibbon() {
+      const container = document.getElementById('abc-letters-list');
+      container.innerHTML = '';
+      HU_ALPHABET.forEach((entry, idx) => {
+        const span = document.createElement('span');
+        span.className = 'abc-char';
+        span.textContent = entry.display;
+        span.id = `abc-char-${idx}`;
+        span.dataset.keys = entry.keys.join(',');
+        container.appendChild(span);
+      });
+    }
+
+    function updateAbcHighlights() {
+      const chars = document.querySelectorAll('.abc-char');
+      chars.forEach(c => c.classList.remove('highlight'));
+
+      const activeKeys = new Set();
+      state.currentItems.forEach(item => {
+        const tokens = getHungarianLetterTokens(item);
+        let targetLetter = '';
+        if (state.currentLevel === 1) {
+          targetLetter = item.toLowerCase();
+        } else if (state.currentLevel === 2) {
+          targetLetter = (tokens[0] || '').toLowerCase();
+        } else if (state.currentLevel === 3) {
+          targetLetter = (tokens[1] || tokens[0] || '').toLowerCase();
+        } else if (state.currentLevel === 4) {
+          targetLetter = (tokens[0] || '').toLowerCase();
+        } else if (state.currentLevel === 5) {
+          // 5. szinten a 3. betű dönt!
+          targetLetter = (tokens[2] || tokens[1] || tokens[0] || '').toLowerCase();
+        }
+        if (targetLetter) activeKeys.add(targetLetter);
+      });
+
+      chars.forEach(span => {
+        const keys = span.dataset.keys ? span.dataset.keys.split(',') : [];
+        const isMatch = keys.some(k => activeKeys.has(k));
+        if (isMatch) {
+          span.classList.add('highlight');
+        }
+      });
+    }
+
+    /* =========================================================
+       SZINTEK ÉS FELADATOK BETÖLTÉSE
+       ========================================================= */
+    function initTabs() {
+      for (let lvl = 1; lvl <= 5; lvl++) {
+        renderTabProgress(lvl);
+      }
+    }
+
+    function renderTabProgress(lvl) {
+      const starsContainer = document.getElementById(`tab-stars-${lvl}`);
+      if (!starsContainer) return;
+      const score = state.scores[lvl];
+      const target = getTargetScore(lvl);
+      starsContainer.innerHTML = '';
+
+      for (let i = 1; i <= target; i++) {
+        const star = document.createElement('span');
+        star.className = `star-icon ${i <= score ? 'filled' : ''}`;
+        star.textContent = i <= score ? '⭐' : '☆';
+        starsContainer.appendChild(star);
+      }
+
+      const badge = document.getElementById(`tab-badge-${lvl}`);
+      const tabEl = document.getElementById(`tab-level-${lvl}`);
+      
+      if (!state.unlocked[lvl]) {
+        tabEl.classList.add('locked');
+        badge.textContent = '🔒 Zárva';
+      } else {
+        tabEl.classList.remove('locked');
+        if (score >= target) {
+          badge.textContent = `✓ Teljesítve (${target}/${target})`;
+          badge.style.color = '#059669';
+        } else {
+          badge.textContent = `${score}/${target} jó`;
+          badge.style.color = '#4f46e5';
+        }
+      }
+    }
+
+    function switchLevel(lvl) {
+      if (!state.unlocked[lvl]) {
+        playSound('incorrect');
+        alert("Ez a szint még zárva van! Oldj meg helyesen feladatokat az előző szinten, vagy kattints a jobb felső sarokban lévő '🔓 Minden szint' gombra a tanári feloldáshoz!");
+        return;
+      }
+      playSound('click');
+      state.currentLevel = lvl;
+      state.selectedTileIndex = null;
+      state.attemptsOnCurrentTask = 0;
+
+      for (let i = 1; i <= 5; i++) {
+        const el = document.getElementById(`tab-level-${i}`);
+        if (el) el.classList.toggle('active', i === lvl);
+      }
+
+      document.getElementById('grand-finish-screen').classList.remove('show');
+      document.getElementById('game-main-area').style.display = 'block';
+
+      loadTaskForCurrentLevel();
+    }
+
+    function loadTaskForCurrentLevel() {
+      const poolObj = TASK_POOLS[state.currentLevel];
+      const pool = poolObj.itemsPool;
+      const idx = state.taskIndex[state.currentLevel] % pool.length;
+      const rawItems = pool[idx];
+
+      const sorted = [...rawItems].sort(compareHungarian);
+      let shuffled = [...rawItems];
+      let shuffleCount = 0;
+
+      do {
+        shuffled = shuffled.sort(() => Math.random() - 0.5);
+        shuffleCount++;
+      } while (rawItems.length > 1 && JSON.stringify(shuffled) === JSON.stringify(sorted) && shuffleCount < 10);
+
+      state.currentItems = shuffled;
+      state.correctOrder = sorted;
+      state.selectedTileIndex = null;
+      state.attemptsOnCurrentTask = 0;
+
+      document.getElementById('task-title').textContent = poolObj.instruction;
+      document.getElementById('task-subhint-text').textContent = poolObj.subhint;
+      
+      const currentScore = state.scores[state.currentLevel];
+      const target = getTargetScore(state.currentLevel);
+      document.getElementById('level-score-display').textContent = `${currentScore} / ${target} helyes válasz`;
+
+      const fb = document.getElementById('feedback-box');
+      fb.className = 'feedback-box';
+      fb.style.display = 'none';
+
+      document.getElementById('check-btn').style.display = 'inline-flex';
+      document.getElementById('retry-btn').style.display = 'none';
+      document.getElementById('next-btn').style.display = 'none';
+
+      renderTiles();
+      updateAbcHighlights();
+    }
+
+    /* =========================================================
+       KÁRTYÁK MEGJELENÍTÉSE ÉS AKADÁLYMENTES INTERAKCIÓ
+       ========================================================= */
+    function renderTiles() {
+      const container = document.getElementById('cards-container');
+      container.innerHTML = '';
+
+      state.currentItems.forEach((itemText, index) => {
+        const tile = document.createElement('div');
+        tile.className = 'word-tile';
+        if (state.selectedTileIndex === index) {
+          tile.classList.add('selected');
+        }
+        tile.dataset.index = index;
+        tile.draggable = true;
+
+        const textWrapper = document.createElement('div');
+        textWrapper.className = 'tile-text-container';
+
+        const tokens = getHungarianLetterTokens(itemText);
+
+        if (state.currentLevel === 1) {
+          // Betű rendezés
+          const span = document.createElement('span');
+          span.className = 'first-letter-highlight';
+          span.textContent = itemText;
+          textWrapper.appendChild(span);
+        } else if (state.currentLevel === 2) {
+          // Szó: 1. betű/msh (pl. 'cs', 'ny', 'k') kékkel kiemelve
+          const firstToken = tokens[0] || '';
+          const restTokens = tokens.slice(1).join('');
+
+          const span1 = document.createElement('span');
+          span1.className = 'first-letter-highlight';
+          span1.textContent = firstToken;
+
+          const spanRest = document.createElement('span');
+          spanRest.textContent = restTokens;
+
+          textWrapper.appendChild(span1);
+          textWrapper.appendChild(spanRest);
+        } else if (state.currentLevel === 3) {
+          // 3. szint: azonos kezdőbetűk esetén a 2. BETŰ SÁRGÁVAL ÉS ALÁHÚZÁSSAL KIEMELVE!
+          // Kétjegyű betűnél mindkét jegy (pl. asztal -> a + sz + tal)
+          const firstToken = tokens[0] || '';
+          const secondToken = tokens[1] || '';
+          const restTokens = tokens.slice(2).join('');
+
+          const span1 = document.createElement('span');
+          span1.textContent = firstToken;
+
+          const span2 = document.createElement('span');
+          span2.className = 'second-letter-highlight';
+          span2.textContent = secondToken;
+
+          const spanRest = document.createElement('span');
+          spanRest.textContent = restTokens;
+
+          textWrapper.appendChild(span1);
+          textWrapper.appendChild(span2);
+          if (restTokens) textWrapper.appendChild(spanRest);
+        } else if (state.currentLevel === 4) {
+          // 4. szint: 4 szó sorrendbe rakása
+          const firstToken = tokens[0] || '';
+          const secondToken = tokens[1] || '';
+          const restTokens = tokens.slice(2).join('');
+
+          const sameFirstCount = state.currentItems.filter(w => {
+            const t = getHungarianLetterTokens(w);
+            return (t[0] || '').toLowerCase() === firstToken.toLowerCase();
+          }).length;
+
+          if (sameFirstCount > 1) {
+            const span1 = document.createElement('span');
+            span1.className = 'first-letter-highlight';
+            span1.textContent = firstToken;
+
+            const span2 = document.createElement('span');
+            span2.className = 'second-letter-highlight';
+            span2.textContent = secondToken;
+
+            const spanRest = document.createElement('span');
+            spanRest.textContent = restTokens;
+
+            textWrapper.appendChild(span1);
+            textWrapper.appendChild(span2);
+            if (restTokens) textWrapper.appendChild(spanRest);
+          } else {
+            const span1 = document.createElement('span');
+            span1.className = 'first-letter-highlight';
+            span1.textContent = firstToken;
+
+            const spanRest = document.createElement('span');
+            spanRest.textContent = tokens.slice(1).join('');
+
+            textWrapper.appendChild(span1);
+            textWrapper.appendChild(spanRest);
+          }
+        } else if (state.currentLevel === 5) {
+          // 5. MESTER SZINT: Az első 2 betű megegyezik, a 3. BETŰ ALÁHÚZVA ÉS KIEMELVE!
+          const firstTwoTokens = tokens.slice(0, 2).join('');
+          const thirdToken = tokens[2] || '';
+          const restTokens = tokens.slice(3).join('');
+
+          const span1 = document.createElement('span');
+          span1.textContent = firstTwoTokens;
+
+          const span3 = document.createElement('span');
+          span3.className = 'third-letter-highlight';
+          span3.textContent = thirdToken;
+
+          const spanRest = document.createElement('span');
+          spanRest.textContent = restTokens;
+
+          textWrapper.appendChild(span1);
+          textWrapper.appendChild(span3);
+          if (restTokens) textWrapper.appendChild(spanRest);
+        }
+
+        // Felolvasó gomb (TTS) a szavaknál (2-5. szint)
+        if (state.currentLevel > 1) {
+          const speakBtn = document.createElement('button');
+          speakBtn.className = 'speak-btn';
+          speakBtn.innerHTML = '🔊';
+          speakBtn.title = `Felolvasás: "${itemText}"`;
+          speakBtn.onclick = (e) => {
+            e.stopPropagation();
+            speakText(itemText);
+          };
+          textWrapper.appendChild(speakBtn);
+        }
+
+        tile.appendChild(textWrapper);
+
+        // SNI könnyítő nyílgombok (mozgatás egyetlen kattintással!)
+        const controls = document.createElement('div');
+        controls.className = 'tile-controls';
+
+        const leftBtn = document.createElement('button');
+        leftBtn.className = 'shift-btn';
+        leftBtn.innerHTML = '◀';
+        leftBtn.title = 'Mozgatás balra';
+        leftBtn.disabled = index === 0;
+        leftBtn.onclick = (e) => {
+          e.stopPropagation();
+          shiftTile(index, -1);
+        };
+
+        const rightBtn = document.createElement('button');
+        rightBtn.className = 'shift-btn';
+        rightBtn.innerHTML = '▶';
+        rightBtn.title = 'Mozgatás jobbra';
+        rightBtn.disabled = index === state.currentItems.length - 1;
+        rightBtn.onclick = (e) => {
+          e.stopPropagation();
+          shiftTile(index, 1);
+        };
+
+        controls.appendChild(leftBtn);
+        controls.appendChild(rightBtn);
+        tile.appendChild(controls);
+
+        // Kattintásos kijelölés és csere (Click-to-Swap)
+        tile.onclick = () => handleTileClick(index);
+
+        // Drag & Drop események
+        tile.addEventListener('dragstart', handleDragStart);
+        tile.addEventListener('dragover', handleDragOver);
+        tile.addEventListener('dragleave', handleDragLeave);
+        tile.addEventListener('drop', handleDrop);
+        tile.addEventListener('dragend', handleDragEnd);
+
+        container.appendChild(tile);
+      });
+    }
+
+    function shiftTile(index, delta) {
+      const targetIndex = index + delta;
+      if (targetIndex < 0 || targetIndex >= state.currentItems.length) return;
+      playSound('swap');
+      const temp = state.currentItems[index];
+      state.currentItems[index] = state.currentItems[targetIndex];
+      state.currentItems[targetIndex] = temp;
+      state.selectedTileIndex = null;
+      renderTiles();
+      clearFeedback();
+    }
+
+    function handleTileClick(index) {
+      if (state.selectedTileIndex === null) {
+        state.selectedTileIndex = index;
+        playSound('click');
+        renderTiles();
+      } else if (state.selectedTileIndex === index) {
+        state.selectedTileIndex = null;
+        playSound('click');
+        renderTiles();
+      } else {
+        playSound('swap');
+        const from = state.selectedTileIndex;
+        const to = index;
+        const temp = state.currentItems[from];
+        state.currentItems[from] = state.currentItems[to];
+        state.currentItems[to] = temp;
+        state.selectedTileIndex = null;
+        renderTiles();
+        clearFeedback();
+      }
+    }
+
+    let draggedIndex = null;
+
+    function handleDragStart(e) {
+      draggedIndex = parseInt(this.dataset.index);
+      this.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      playSound('click');
+    }
+
+    function handleDragOver(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      this.classList.add('drag-over');
+    }
+
+    function handleDragLeave() {
+      this.classList.remove('drag-over');
+    }
+
+    function handleDrop(e) {
+      e.preventDefault();
+      this.classList.remove('drag-over');
+      const targetIndex = parseInt(this.dataset.index);
+      if (draggedIndex === null || draggedIndex === targetIndex) return;
+
+      playSound('swap');
+      const itemToMove = state.currentItems.splice(draggedIndex, 1)[0];
+      state.currentItems.splice(targetIndex, 0, itemToMove);
+      state.selectedTileIndex = null;
+      renderTiles();
+      clearFeedback();
+    }
+
+    function handleDragEnd() {
+      this.classList.remove('dragging');
+      document.querySelectorAll('.word-tile').forEach(t => t.classList.remove('drag-over'));
+      draggedIndex = null;
+    }
+
+    function clearFeedback() {
+      const fb = document.getElementById('feedback-box');
+      fb.className = 'feedback-box';
+      fb.style.display = 'none';
+      document.querySelectorAll('.word-tile').forEach(t => t.classList.remove('correct', 'incorrect'));
+    }
+
+    /* =========================================================
+       ELLENŐRZÉS ÉS SZINTLÉPÉS
+       ========================================================= */
+    function checkCurrentAnswer() {
+      const tiles = document.querySelectorAll('.word-tile');
+      let isAllCorrect = true;
+
+      state.currentItems.forEach((item, idx) => {
+        const isMatch = item === state.correctOrder[idx];
+        if (isMatch) {
+          tiles[idx].classList.add('correct');
+          tiles[idx].classList.remove('incorrect');
+        } else {
+          tiles[idx].classList.add('incorrect');
+          tiles[idx].classList.remove('correct');
+          isAllCorrect = false;
+        }
+      });
+
+      const fb = document.getElementById('feedback-box');
+      fb.style.display = 'flex';
+
+      if (isAllCorrect) {
+        playSound('correct');
+        state.scores[state.currentLevel]++;
+        const currentScore = state.scores[state.currentLevel];
+        const target = getTargetScore(state.currentLevel);
+        renderTabProgress(state.currentLevel);
+
+        document.getElementById('level-score-display').textContent = `${currentScore} / ${target} helyes válasz`;
+
+        fb.className = 'feedback-box success show';
+        const praises = [
+          '🎉 Nagyszerű munka! A sorrend tökéletes!',
+          '🌟 Bravó! Nagyon ügyesen rendezted sorba!',
+          '🏆 Kiváló megoldás! Csillagot érdemelsz!',
+          '✨ Szuper vagy! Pontosan ez a jó ABC sorrend!'
+        ];
+        fb.innerHTML = `<span>${praises[Math.floor(Math.random() * praises.length)]}</span>`;
+
+        document.getElementById('check-btn').style.display = 'none';
+        document.getElementById('retry-btn').style.display = 'none';
+        document.getElementById('next-btn').style.display = 'inline-flex';
+
+        // Ha elérte az előírt cél válaszok számát a szinten (5 vagy 10)
+        if (currentScore === target) {
+          setTimeout(() => {
+            triggerLevelCompletion(state.currentLevel);
+          }, 600);
+        }
+
+      } else {
+        playSound('incorrect');
+        state.attemptsOnCurrentTask++;
+        fb.className = 'feedback-box error show';
+        
+        if (state.attemptsOnCurrentTask >= 2) {
+          fb.innerHTML = `<span>Még nem teljesen jó. Próbáld újra a nyilakkal, vagy nézd meg a Tippet! 😊</span>`;
+        } else {
+          fb.innerHTML = `<span>Még nem teljesen pontos. Nézd meg az ABC szalagot felül, és próbáld meg újra!</span>`;
+        }
+
+        document.getElementById('check-btn').style.display = 'none';
+        document.getElementById('retry-btn').style.display = 'inline-flex';
+        document.getElementById('next-btn').style.display = 'none';
+      }
+    }
+
+    function retryCurrentTask() {
+      playSound('click');
+      clearFeedback();
+      document.getElementById('check-btn').style.display = 'inline-flex';
+      document.getElementById('retry-btn').style.display = 'none';
+    }
+
+    function goToNextTask() {
+      playSound('click');
+      state.taskIndex[state.currentLevel]++;
+      loadTaskForCurrentLevel();
+    }
+
+    /* =========================================================
+       SZINTLÉPÉS MODAL KEZELÉSE (1-5. SZINT)
+       ========================================================= */
+    function triggerLevelCompletion(completedLevel) {
+      playSound('levelup');
+
+      const nextLevel = completedLevel + 1;
+      if (nextLevel <= 5) {
+        state.unlocked[nextLevel] = true;
+        renderTabProgress(nextLevel);
+      }
+
+      const modal = document.getElementById('level-up-modal');
+      const title = document.getElementById('level-up-title');
+      const desc = document.getElementById('level-up-desc');
+      const nextBtn = document.getElementById('modal-next-level-btn');
+      const nextBtnText = document.getElementById('modal-next-level-text');
+
+      if (completedLevel === 5) {
+        // Mind az 5 szint (és mind a 10 mester feladvány) teljesítve!
+        title.textContent = `🏆 Hatalmas bravó! Teljesítetted az 5. Mester Szintet is!`;
+        desc.innerHTML = `Sikeresen megoldottad mind a <strong>10 feladványt</strong> ezen a szinten!<br>Megtekintheted a dicsérő okleveledet, vagy gyakorolhatsz még tovább!`;
+        nextBtnText.textContent = `📜 Dicsérő Oklevél megtekintése!`;
+        nextBtn.onclick = () => {
+          modal.classList.remove('show');
+          document.getElementById('game-main-area').style.display = 'none';
+          document.getElementById('grand-finish-screen').classList.add('show');
+        };
+        modal.classList.add('show');
+        return;
+      }
+
+      title.textContent = `🎉 Bravó! Teljesítetted a(z) ${completedLevel}. szintet!`;
+      
+      if (completedLevel === 4) {
+        // 4. SZINT TELJESÍTÉSE UTÁN: Van "Még gyakorlok ezen a szinten" és "Tovább az 5. szintre"!
+        desc.innerHTML = `Elérted az <strong>5 helyes megoldást</strong> a 4 szavas feladatokban!<br>Feloldottuk az <strong>5. Mester Szintet</strong>, ahol több betű is azonos, és 10 feladvány vár rád a nagydíjért!`;
+        nextBtnText.textContent = `👑 Tovább az 5. Mester szintre (10 feladvány)!`;
+        nextBtn.onclick = () => advanceToNextLevelFromModal();
+      } else {
+        desc.innerHTML = `Elérted az <strong>5 helyes megoldást</strong> ezen a szinten!<br>Feloldottuk a <strong>${nextLevel}. szintet</strong>! Szeretnél továbblépni?`;
+        nextBtnText.textContent = `🚀 Tovább a(z) ${nextLevel}. szintre!`;
+        nextBtn.onclick = () => advanceToNextLevelFromModal();
+      }
+
+      modal.classList.add('show');
+    }
+
+    function advanceToNextLevelFromModal() {
+      document.getElementById('level-up-modal').classList.remove('show');
+      const nextLevel = state.currentLevel + 1;
+      if (nextLevel <= 5) {
+        switchLevel(nextLevel);
+      }
+    }
+
+    function stayOnCurrentLevelFromModal() {
+      document.getElementById('level-up-modal').classList.remove('show');
+      goToNextTask();
+    }
+
+    /* =========================================================
+       SEGÍTSÉG / TIPP GOMB
+       ========================================================= */
+    function showHelpHint() {
+      playSound('click');
+      let hintMsg = "";
+      if (state.currentLevel === 1) {
+        hintMsg = "Tipp a betűkhöz:\nNézd meg a sárga kiemelt betűket az ABC szalagon felül! Balról jobbra haladva amelyik betű előbb van az ábécében, azt mozgasd előre!";
+      } else if (state.currentLevel === 2) {
+        hintMsg = "Tipp a különböző kezdőbetűs szavakhoz:\nCsak a szavak legelső (kékkel kiemelt) betűjét kell összehasonlítanod az ábécével!";
+      } else if (state.currentLevel === 3) {
+        hintMsg = "Tipp az azonos kezdőbetűs szavakhoz:\nMivel az első betűjük egyforma, a második (sárgával aláhúzott) betűjük dönt! Kétjegyű betűnél mindkét jegyet együtt nézzük (pl. az 'asztal' szónál az 'sz' betűt)!";
+      } else if (state.currentLevel === 4) {
+        hintMsg = "Tipp a 4 szó rendezéséhez:\nNézd végig a szavak kezdőbetűit! Keresd meg őket az ABC szalagon. Amelyik legelöl van balról, az jön legelőre, majd utána a többi!";
+      } else if (state.currentLevel === 5) {
+        hintMsg = "Tipp a Mester szinthez (5. szint):\nMivel a szavak első 2 betűje megegyezik, most a HARMADIK (sárgával aláhúzott) betűt kell megkeresned az ABC szalagon! Amelyiknek a harmadik betűje előbb van az ábécében, az a szó lesz előrébb!";
+      }
+      alert("💡 SEGÍTSÉG:\n\n" + hintMsg);
+    }
+
+    /* =========================================================
+       SZÉLSŐSÉGES ÉS TANÁRI VEZÉRLŐK
+       ========================================================= */
+    // Tanári gomb: Mind az 5 szint azonnali feloldása
+    document.getElementById('unlock-all-btn').onclick = () => {
+      for (let i = 1; i <= 5; i++) {
+        state.unlocked[i] = true;
+        renderTabProgress(i);
+      }
+      playSound('correct');
+      alert("🔓 Mind az 5 szint feloldva! A tanuló mostantól bármelyik szintre szabadon kattinthat a felső sávban.");
+    };
+
+    // ABC Sorvezető szalag elrejtése / mutatása
+    const toggleAbcBtn = document.getElementById('toggle-abc-btn');
+    const abcRibbon = document.getElementById('abc-ribbon');
+    const abcBtnText = document.getElementById('abc-btn-text');
+
+    toggleAbcBtn.onclick = () => {
+      playSound('click');
+      abcRibbon.classList.toggle('hidden');
+      const isHidden = abcRibbon.classList.contains('hidden');
+      abcBtnText.textContent = isHidden ? 'ABC segítség mutatása' : 'ABC segítség elrejtése';
+      toggleAbcBtn.classList.toggle('active', !isHidden);
+    };
+
+    // Hang ki/be kapcsolása
+    const toggleSoundBtn = document.getElementById('toggle-sound-btn');
+    const soundIcon = document.getElementById('sound-icon');
+    const soundText = document.getElementById('sound-text');
+
+    toggleSoundBtn.onclick = () => {
+      state.soundEnabled = !state.soundEnabled;
+      soundIcon.textContent = state.soundEnabled ? '🔊' : '🔇';
+      soundText.textContent = state.soundEnabled ? 'Hang be' : 'Hang ki';
+      toggleSoundBtn.classList.toggle('active', state.soundEnabled);
+      if (state.soundEnabled) playSound('click');
+    };
+
+    // Betűméret növelése és csökkentése (SNI könnyítés)
+    document.getElementById('font-increase-btn').onclick = () => {
+      if (state.fontScale < 1.3) {
+        state.fontScale += 0.1;
+        document.documentElement.style.setProperty('--font-scale', state.fontScale);
+        playSound('click');
+      }
+    };
+
+    document.getElementById('font-decrease-btn').onclick = () => {
+      if (state.fontScale > 0.85) {
+        state.fontScale -= 0.1;
+        document.documentElement.style.setProperty('--font-scale', state.fontScale);
+        playSound('click');
+      }
+    };
+
+    function restartEntireGame() {
+      state.currentLevel = 1;
+      state.scores = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+      state.unlocked = { 1: true, 2: false, 3: false, 4: false, 5: false };
+      state.taskIndex = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+      initTabs();
+      switchLevel(1);
+    }
+
+    /* =========================================================
+       INDÍTÁS
+       ========================================================= */
+    renderAbcRibbon();
+    initTabs();
+    loadTaskForCurrentLevel();
+  </script>
+</body>
+</html>
